@@ -155,10 +155,9 @@ class CPKFold(object):
                     train_index_ = np.hstack(
                         (split_indices[i], split_indices[i + 1][:embg_size]))
                     train_index_embg.append(train_index_)
-                    train_index.append(split_indices[i])
                 else:
                     train_index_embg.append(split_indices[i])
-                    train_index.append(split_indices[i])
+                train_index.append(split_indices[i])
             train_indices_embg.append(
                 np.array(list(set(np.hstack(train_index_embg)))))
             train_indices.append(np.array(list(set(np.hstack(train_index)))))
@@ -224,13 +223,13 @@ def generate_signals(clf,
         num_threads=num_threads)
     signals = []
     for train, test in cv_gen.split(X=X):
-        train_params = dict()
-        test_params = dict()
+        train_params = {}
+        test_params = {}
         # Sample weight is an optional parameter
         if sample_weight is not None:
             train_params['sample_weight'] = sample_weight.iloc[train].values
             test_params['sample_weight'] = sample_weight.iloc[test].values
-        test_params.update(kwargs)
+        test_params |= kwargs
         clf_fit = clf.fit(
             X=X.iloc[train, :].values, y=y.iloc[train].values, **train_params)
         # Scoring

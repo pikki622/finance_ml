@@ -40,21 +40,16 @@ def fitKDE(obs, bwidth=0.25, kernel='gaussian', x=None):
     if len(x.shape) == 1:
         x = x.reshape(-1, 1)
     log_prob = kde.score_samples(x)
-    pdf = pd.Series(np.exp(log_prob), index=x.flatten())
-    return pdf
+    return pd.Series(np.exp(log_prob), index=x.flatten())
 
 def err_pdf(var, e_val, q, bwidth, pts=1000):
     pdf0 = mp_pdf(var[0], q, pts)
     pdf1 = fitKDE(e_val, bwidth, x=pdf0.index.values)
-    sse = np.sum((pdf1 - pdf0) ** 2)
-    return sse
+    return np.sum((pdf1 - pdf0) ** 2)
 
 def find_max_eigen_val(e_val, q, bwidth, min_var=1e-5, max_var=1-1e-5):
     out = minimize(lambda *x: err_pdf(*x), .5, args=(e_val, q, bwidth), bounds=((min_var, max_var),))
-    if out["success"]:
-        var = out['x'][0]
-    else:
-        var = 1
+    var = out['x'][0] if out["success"] else 1
     e_max = var * (1 + (1./q) ** 0.5) ** 2
     return e_max, var
 
@@ -81,15 +76,13 @@ def detone_corr(e_val, e_vec, n_facts, shrinkage=False, alpha=0):
         e_val_r, e_vec_r = e_val[n_facts:, n_facts:], e_vec[:, n_facts:]
         corr_r = np.dot(e_vec_r, e_val_r).dot(e_vec_r.T)
         corr1 = alpha * corr_r + (1 - alpha) * np.diag(np.diag(corr_r))
-        # Renormalize to keep trace 1
-        corr1 = cov2corr(corr1)
     else:
         e_val_ = np.diag(e_val).copy()
         e_val_[:n_facts] = 0
         e_val_ = np.diag(e_val_)
         corr1 = np.dot(e_vec, e_val_).dot(e_vec.T)
-        # Renormalize to keep trace 1
-        corr1 = cov2corr(corr1)
+    # Renormalize to keep trace 1
+    corr1 = cov2corr(corr1)
     return corr1
 
 
@@ -99,8 +92,7 @@ def denoise_cov(cov, q, bwidth):
     e_max0, var0 = find_max_eigen_val(np.diag(e_val0), q, bwidth)
     nfacts0 = e_val0.shape[0] - np.diag(e_val0)[::-1].searchsorted(e_max0)
     corr1 = denoise_corr(e_val0, e_vec0, nfacts0)
-    cov1 = corr2cov(corr1, np.diag(cov) ** .5)
-    return cov1
+    return corr2cov(corr1, np.diag(cov) ** .5)
 
 def opt_portfolio(cov, mu=None):
     inv = np.linalg.inv(cov)

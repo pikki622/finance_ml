@@ -22,13 +22,12 @@ def get_rec_bipart(cov, sort_idx):
     weight = pd.Series(1, index=sort_idx)
     # Initialize all in one cluster
     cl_items = [sort_idx]
-    while len(cl_items) > 0:
+    while cl_items:
         cl_items_ = []
         for cl in cl_items:
             # Split into half for each cluter
             if len(cl) >= 2:
-                cl_items_.append(cl[0:len(cl) // 2])
-                cl_items_.append(cl[len(cl) // 2:len(cl)])
+                cl_items_.extend((cl[:len(cl) // 2], cl[len(cl) // 2:]))
         # Update cluster
         cl_items = cl_items_
         for i in range(0, len(cl_items), 2):
@@ -72,8 +71,7 @@ def get_cluster_var(cov, cl_items):
     """
     cov_cl = cov.loc[cl_items, cl_items]
     w = get_ivp(cov_cl).reshape(-1, 1)
-    cl_var = np.dot(np.dot(w.T, cov_cl), w)[0, 0]
-    return cl_var
+    return np.dot(np.dot(w.T, cov_cl), w)[0, 0]
 
 
 def get_hrp(cov, corr):

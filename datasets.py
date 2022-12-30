@@ -11,9 +11,9 @@ def get_test_data(n_features=40, n_informative=10, n_redundant=10, n_samples=100
     X = pd.DataFrame(X, index=time_idx)
     cont = pd.Series(cont, index=time_idx).to_frame('bin')
     # Create name of columns
-    columns = ['I_' + str(i) for i in range(n_informative)]
-    columns += ['R_' + str(i) for i in range(n_redundant)]
-    columns += ['N_' + str(i) for i in range(n_features - len(columns))]
+    columns = [f'I_{str(i)}' for i in range(n_informative)]
+    columns += [f'R_{str(i)}' for i in range(n_redundant)]
+    columns += [f'N_{str(i)}' for i in range(n_features - len(columns))]
     X.columns = columns
     cont['w'] = 1. / cont.shape[0]
     cont['t1'] = pd.Series(cont.index, index=cont.index)

@@ -15,7 +15,7 @@ def cluster_kmeans_base(corr0, max_num_clusters=10, min_num_clusters=4, n_init=1
     q_val = None
     max_num_clusters = min(max_num_clusters, int(np.floor(dist.shape[0]/2)))
     min_num_clusters = max(2, min_num_clusters)
-    for init in range(n_init):
+    for _ in range(n_init):
         for n_clusters in range(min_num_clusters, max_num_clusters + 1):
             kmeans_ = KMeans(n_clusters=n_clusters, n_jobs=1, n_init=1)
             kmeans_ = kmeans_.fit(dist.values)
@@ -39,16 +39,16 @@ def cluster_kmeans_base(corr0, max_num_clusters=10, min_num_clusters=4, n_init=1
     return corr1, clstrs, silh
 
 def make_new_outputs(corr0, clstrs1, clstrs2):
-    clstrs_new = dict()
+    clstrs_new = {}
     for i in clstrs1.keys():
         clstrs_new[len(clstrs_new.keys())] = list(clstrs1[i])
     for i in clstrs2.keys():
         clstrs_new[len(clstrs_new.keys())] = list(clstrs2[i])
-    new_idx = [j for i in clstrs_new.keys() for j in clstrs_new[i]]
+    new_idx = [j for i in clstrs_new for j in clstrs_new[i]]
     corr_new = corr0.loc[new_idx, new_idx]
     dist = corr_metric(corr0, False)
     kmeans_labels = np.zeros(len(dist.columns))
-    for i in clstrs_new.keys():
+    for i in clstrs_new:
         idxs = [dist.index.get_loc(k) for k in clstrs_new[i]]
         kmeans_labels[idxs] = i
     silh_new = pd.Series(silhouette_samples(dist.values, kmeans_labels), index=dist.index)
@@ -64,23 +64,23 @@ def cluster_kmeans_top(corr0, max_num_clusters=None, min_num_clusters=4, n_init=
                                               n_init=n_init, debug=debug)
     clstrs_tstats = {i:np.mean(silh[clstrs[i]]) / max(np.std(silh[clstrs[i]]), _eps) for i in clstrs.keys()}
     tstats_mean = np.mean(list(clstrs_tstats.values()))
-    redo_clstrs = [i for i in clstrs_tstats.keys() if clstrs_tstats[i] < tstats_mean]
+    redo_clstrs = [i for i in clstrs_tstats if clstrs_tstats[i] < tstats_mean]
     if len(redo_clstrs) <= 2:
         return corr1, clstrs, silh
-    else:
-        keys_redo = [j for i in redo_clstrs for j in clstrs[i]]
-        corr_tmp = corr0.loc[keys_redo, keys_redo]
-        corr2, clstrs2, silh2 = cluster_kmeans_base(corr_tmp,
-                                                    max_num_clusters=min(max_num_clusters, corr_tmp.shape[1] - 1),
-                                                    min_num_clusters=2,
-                                                    n_init=n_init,
-                                                    debug=debug)
-        clstrs1 = {i: clstrs[i] for i in clstrs.keys() if i not in redo_clstrs}
-        corr_new, clstrs_new, silh_new = make_new_outputs(corr0, clstrs1, clstrs2)
-        new_clstrs_tstats = {i:np.mean(silh_new[i]) / max(np.std(silh_new[i]),  _eps) for i in clstrs_new.keys()}
-        tstats_mean = np.mean(list(clstrs_tstats.values()))
-        new_tstats_mean = np.mean(list(new_clstrs_tstats.values()))
-        if new_tstats_mean <= tstats_mean:
-            return corr1, clstrs, silh
-        else:
-            return corr_new, clstrs_new, silh_new
+    keys_redo = [j for i in redo_clstrs for j in clstrs[i]]
+    corr_tmp = corr0.loc[keys_redo, keys_redo]
+    corr2, clstrs2, silh2 = cluster_kmeans_base(corr_tmp,
+                                                max_num_clusters=min(max_num_clusters, corr_tmp.shape[1] - 1),
+                                                min_num_clusters=2,
+                                                n_init=n_init,
+                                                debug=debug)
+    clstrs1 = {i: clstrs[i] for i in clstrs.keys() if i not in redo_clstrs}
+    corr_new, clstrs_new, silh_new = make_new_outputs(corr0, clstrs1, clstrs2)
+    new_clstrs_tstats = {i:np.mean(silh_new[i]) / max(np.std(silh_new[i]),  _eps) for i in clstrs_new.keys()}
+    tstats_mean = np.mean(list(clstrs_tstats.values()))
+    new_tstats_mean = np.mean(list(new_clstrs_tstats.values()))
+    return (
+        (corr1, clstrs, silh)
+        if new_tstats_mean <= tstats_mean
+        else (corr_new, clstrs_new, silh_new)
+    )

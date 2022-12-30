@@ -35,8 +35,7 @@ def mp_pandas_obj(func, pd_obj, num_threads=1, mp_batches=1,
         parts = nested_parts(len(pd_obj[1]), num_threads * mp_batches, descend)
     jobs = []
     for i in range(1, len(parts)):
-        job = {pd_obj[0]: pd_obj[1][parts[i - 1]: parts[i]], 'func': func}
-        job.update(kwargs)
+        job = {pd_obj[0]: pd_obj[1][parts[i - 1]: parts[i]], 'func': func} | kwargs
         jobs.append(job)
     outputs = [x[0] for x in process_jobs(jobs, num_threads=num_threads)]
     # You can use either of pd.Series or pd.DatFrame

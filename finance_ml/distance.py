@@ -10,10 +10,7 @@ def _fix_corr(corr):
 
 def corr_metric(corr, use_abs=False):
     corr = _fix_corr(corr)
-    if use_abs:
-        return np.sqrt(1 - np.abs(corr))
-    else:
-        return np.sqrt(0.5 * (1 - corr))
+    return np.sqrt(1 - np.abs(corr)) if use_abs else np.sqrt(0.5 * (1 - corr))
 
 def corr_metric_xy(x, y, use_abs=False):
     corr = np.corrcoef(x, y)[0, 1]
@@ -23,7 +20,7 @@ def _get_zeta(N):
     return (8 + 324 * N + 12 * (36 * N + 729 * N ** 2) ** 0.5) ** (1./3)
 
 def _num_bins(n_obs, corr=None):
-    if corr is None or 1. - corr ** 2 < 1e-8:
+    if corr is None or corr**2 > 0.99999999:
         zeta = _get_zeta(n_obs)
         b = round(zeta / 6. + 2. / (3 * zeta) + 1. / 3)
     else:

@@ -36,14 +36,15 @@ def _get_bins_from_trend(molecule, close, min_step, max_step, step):
 def get_bins_from_trend(close, max_step, min_step=3, step=1, num_threads=None):
     if num_threads is None:
         num_threads = mp.cpu_count()
-    output = mp_pandas_obj(func=_get_bins_from_trend,
-                           pd_obj=('molecule', close.index),
-                           num_threads=num_threads,
-                           close=close,
-                           max_step=max_step,
-                           min_step=min_step,
-                           step=step)
-    return output
+    return mp_pandas_obj(
+        func=_get_bins_from_trend,
+        pd_obj=('molecule', close.index),
+        num_threads=num_threads,
+        close=close,
+        max_step=max_step,
+        min_step=min_step,
+        step=step,
+    )
 
 
     

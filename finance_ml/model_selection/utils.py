@@ -76,10 +76,7 @@ def performance(ret, proba, step=0.01):
         pos_ret = ret[pos_idx]
         won_count = len(neg_ret[neg_ret < 0]) + len(pos_ret[pos_ret > 0])
         total_count = len(neg_ret) + len(pos_ret)
-        if total_count == 0:
-            won_ratio = 0
-        else:
-            won_ratio = won_count / total_count
+        won_ratio = 0 if total_count == 0 else won_count / total_count
         won_ratios.append(won_ratio)
         idx = neg_idx | pos_idx
         ret_ = ret[idx]
@@ -110,10 +107,7 @@ def meta_performance(ret, proba, step=0.01):
         bet_ret = ret[idx]
         won_count = len(bet_ret[bet_ret > 0])
         total_count = len(bet_ret)
-        if total_count == 0:
-            won_ratio = 0
-        else:
-            won_ratio = won_count / total_count
+        won_ratio = 0 if total_count == 0 else won_count / total_count
         won_ratios.append(won_ratio)
         if len(bet_ret) == 0:
             pnl = 0

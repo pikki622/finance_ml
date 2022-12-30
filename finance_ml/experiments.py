@@ -13,8 +13,7 @@ def form_block_matrix(n_blocks, bsize, bcorr):
     block = np.ones((bsize, bsize)) * bcorr
     for i in range(bsize):
         block[i, i] = 1
-    corr = block_diag(*[block] * n_blocks)
-    return corr
+    return block_diag(*[block] * n_blocks)
 
 def form_true_matrix(n_blocks, bsize, bcorr, is_shuffle=True):
     corr0 = form_block_matrix(n_blocks, bsize, bcorr)
@@ -31,10 +30,7 @@ def form_true_matrix(n_blocks, bsize, bcorr, is_shuffle=True):
 def simulate_mu_cov(mu, cov, n_obs, shrink=False):
     x = np.random.multivariate_normal(mu.flatten(), cov, size=n_obs)
     mu1 = x.mean(axis=0).reshape(-1, 1)
-    if shrink:
-        cov1 = LedoitWolf().fit(x).covariance_
-    else:
-        cov1 = np.cov(x, rowvar=0)
+    cov1 = LedoitWolf().fit(x).covariance_ if shrink else np.cov(x, rowvar=0)
     return mu1, cov1
 
 def get_random_cov(n_cols, n_facts):
@@ -64,10 +60,7 @@ def get_random_block_cov(n_cols, n_blocks, min_block_size=2, sigma=1., random_st
     cov = None
     for n_cols_ in parts:
         cov_ = get_cov_sub(int(max(n_cols_ * (n_cols_ + 1) / 2., 100)), n_cols_, sigma, random_state=rng)
-        if cov is None:
-            cov = cov_.copy()
-        else:
-            cov = block_diag(cov, cov_)
+        cov = cov_.copy() if cov is None else block_diag(cov, cov_)
     return cov
 
 def get_random_block_corr(n_cols, n_blocks, random_state=None, min_block_size=2, sigma=1., is_shuffle=False):

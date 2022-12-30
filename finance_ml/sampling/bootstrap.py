@@ -25,6 +25,6 @@ def get_ind_matrix(timestamps, t1, num_threads=1):
 def mp_ind_matrix(timestamps, t1, molecule):
     t1 = t1.loc[molecule]
     ind_matrix = pd.DataFrame(0, index=timestamps, columns=molecule)
-    for i, (t0, t1) in enumerate(t1.iteritems()):
+    for t0, t1 in t1.iteritems():
         ind_matrix.loc[t0:t1] = 1
     return ind_matrix

@@ -24,8 +24,7 @@ def get_weights_FFD(d, thres, max_size=10000):
         if abs(w_) <= thres:
             break
         w.append(w_)
-    w = np.array(w)
-    return w
+    return np.array(w)
 
 
 def frac_diff_FFD(series, d, lag=1, thres=1e-5, max_size=10000):
@@ -49,9 +48,7 @@ def frac_diff_FFD(series, d, lag=1, thres=1e-5, max_size=10000):
     w = get_weights_FFD(d, thres, max_size)
     width = len(w)
     series_ = series.fillna(method='ffill').dropna()
-    rolling_array = []
-    for i in range(width):
-        rolling_array.append(series_.shift(i * lag).values)
+    rolling_array = [series_.shift(i * lag).values for i in range(width)]
     rolling_array = np.array(rolling_array)
     series_val = np.dot(rolling_array.T, w)
     series = pd.Series(index=series.index)

@@ -56,11 +56,21 @@ def feat_imp_SFI(clf, X, y, sample_weight=None, scoring='neg_log_loss',
             - mean: Mean of importance
             - std: Standard deviation of importance
     """
-    imp = mp_pandas_obj(mp_feat_imp_SFI, ('feat_names', X.columns),
-                        num_threads, clf=clf, X=X, y=y, sample_weight=sample_weight,
-                        scoring=scoring, n_splits=n_splits, t1=t1, cv_gen=cv_gen,
-                        pct_embargo=pct_embargo, purging=purging)
-    return imp
+    return mp_pandas_obj(
+        mp_feat_imp_SFI,
+        ('feat_names', X.columns),
+        num_threads,
+        clf=clf,
+        X=X,
+        y=y,
+        sample_weight=sample_weight,
+        scoring=scoring,
+        n_splits=n_splits,
+        t1=t1,
+        cv_gen=cv_gen,
+        pct_embargo=pct_embargo,
+        purging=purging,
+    )
 
 
 def feat_imp_MDI(fit, feat_names):
@@ -130,16 +140,10 @@ def feat_imp_MDA(clf, X, y, sample_weight=None, scoring='neg_log_loss', n_splits
     for idx, (train, test) in zip(index, cv_gen.split(X=X)):
         X_train = X.iloc[train]
         y_train = y.iloc[train]
-        if sample_weight is not None:
-            w_train = sample_weight.iloc[train].values
-        else:
-            w_train = None
+        w_train = None if sample_weight is None else sample_weight.iloc[train].values
         X_test = X.iloc[test]
         y_test = y.iloc[test]
-        if sample_weight is not None:
-            w_test = sample_weight.iloc[test].values
-        else:
-            w_test = None
+        w_test = sample_weight.iloc[test].values if sample_weight is not None else None
         clf_fit = clf.fit(X_train, y_train, sample_weight=w_train)
         scores.loc[idx] = evaluate(clf_fit, X_test, y_test, scoring,
                                    sample_weight=w_test)
@@ -153,10 +157,7 @@ def feat_imp_MDA(clf, X, y, sample_weight=None, scoring='neg_log_loss', n_splits
     # (Original score) - (premutated score)
     imprv = (-scores_perm).add(scores, axis=0)
     # Relative to maximum improvement
-    if scoring == 'neg_log_loss':
-        max_imprv = -scores_perm
-    else:
-        max_imprv = 1. - scores_perm
+    max_imprv = -scores_perm if scoring == 'neg_log_loss' else 1. - scores_perm
     imp = imprv / max_imprv
     return pd.concat({"mean": imp.mean(), "std": imp.std() * (imp.shape[0] ** -0.5)}, axis=1)
 
@@ -243,16 +244,10 @@ def feat_imp_MDA_clustered(clf, X, y, clstrs,
     for idx, (train, test) in zip(index, cv_gen.split(X=X)):
         X_train = X.iloc[train]
         y_train = y.iloc[train]
-        if sample_weight is not None:
-            w_train = sample_weight.iloc[train].values
-        else:
-            w_train = None
+        w_train = None if sample_weight is None else sample_weight.iloc[train].values
         X_test = X.iloc[test]
         y_test = y.iloc[test]
-        if sample_weight is not None:
-            w_test = sample_weight.iloc[test].values
-        else:
-            w_test = None
+        w_test = sample_weight.iloc[test].values if sample_weight is not None else None
         clf_fit = clf.fit(X_train, y_train, sample_weight=w_train)
         scores.loc[idx] = evaluate(clf_fit, X_test, y_test, scoring,
                                    sample_weight=w_test)
@@ -266,10 +261,7 @@ def feat_imp_MDA_clustered(clf, X, y, clstrs,
     # (Original score) - (premutated score)
     imprv = (-scores_perm).add(scores, axis=0)
     # Relative to maximum improvement
-    if scoring == 'neg_log_loss':
-        max_imprv = -scores_perm
-    else:
-        max_imprv = 1. - scores_perm
+    max_imprv = -scores_perm if scoring == 'neg_log_loss' else 1. - scores_perm
     imp = imprv / max_imprv
     imp = pd.concat({'mean': imp.mean(), 'std': imp.std() * imp.shape[0] ** -0.5}, axis=1)
     imp.index = [f"C_{i}" for i in imp.index]

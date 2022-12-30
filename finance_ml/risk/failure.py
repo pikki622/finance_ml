@@ -22,8 +22,7 @@ def calc_prob_sr(pt, sl, freq, tgt_sr, rf=0.):
     a = (freq + tgt_sr ** 2) * diff ** 2
     b = diff * (2 * freq * (sl - rf) - tgt_sr ** 2 * diff)
     c = freq * (sl - rf) ** 2
-    p = (-b + (b ** 2 - 4 * a * c) ** .5) / (2. * a)
-    return p
+    return (-b + (b ** 2 - 4 * a * c) ** .5) / (2. * a)
 
 
 def prob_failure(ret, freq, tgt_sr):
@@ -48,5 +47,4 @@ def prob_failure(ret, freq, tgt_sr):
     r_neg = ret[ret <= 0].mean()
     p = ret[ret > 0].shape[0] / float(ret.shape[0])
     th_p = calc_prob_sr(r_pos, r_neg, freq, tgt_sr)
-    risk = ss.norm.cdf(th_p, p, p * (1 - p))
-    return risk
+    return ss.norm.cdf(th_p, p, p * (1 - p))

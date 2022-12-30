@@ -22,7 +22,9 @@ def get_evec(dot, var_th):
     idx = e_val.argsort()[::-1]
     e_val, e_vec = e_val[idx], e_vec[:, idx]
     # Labeling features
-    e_val = pd.Series(e_val, index=['PC_' + str(i + 1) for i in range(e_val.shape[0])])
+    e_val = pd.Series(
+        e_val, index=[f'PC_{str(i + 1)}' for i in range(e_val.shape[0])]
+    )
     e_vec = pd.DataFrame(e_vec, index=dot.index, columns=e_val.index)
     e_vec = e_vec.loc[:, e_val.index]
     # Reduce dimension from threshold
@@ -50,6 +52,8 @@ def ortho_feats(dfX, var_th=.95):
     Z = (dfX.values - dfX.mean().values) / dfX.std().values
     dot = pd.DataFrame(np.dot(Z.T, Z), index=dfX.columns, columns=dfX.columns)
     e_val, e_vec = get_evec(dot, var_th)
-    dfP = pd.DataFrame(np.dot(Z, e_vec), index=dfX.index,
-                       columns=['PC_' + str(i + 1) for i in range(e_vec.shape[1])])
-    return dfP
+    return pd.DataFrame(
+        np.dot(Z, e_vec),
+        index=dfX.index,
+        columns=[f'PC_{str(i + 1)}' for i in range(e_vec.shape[1])],
+    )

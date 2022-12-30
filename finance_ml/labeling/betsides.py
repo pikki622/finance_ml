@@ -50,17 +50,17 @@ def cusum_side(close, h, k=0, use_log=True, num_threads=None):
     # asssum that E y_t = y_{t-1}
     side = []
     s_pos, s_neg = 0, 0
-    if use_log:
-        diff = np.log(close).diff().dropna()
-    else:
-        diff = close.diff().dropna()
+    diff = np.log(close).diff().dropna() if use_log else close.diff().dropna()
     # time variant threshold
     if isinstance(h, numbers.Number):
         h = pd.Series(h, index=diff.index)
     h = h.reindex(diff.index, method='bfill')
     h = h.dropna()
-    side = mp_pandas_obj(func=_cusum_side,
-                         pd_obj=('molecule', h.index),
-                         num_threads=num_threads,
-                         diff=diff, h=h, k=k)
-    return side
+    return mp_pandas_obj(
+        func=_cusum_side,
+        pd_obj=('molecule', h.index),
+        num_threads=num_threads,
+        diff=diff,
+        h=h,
+        k=k,
+    )

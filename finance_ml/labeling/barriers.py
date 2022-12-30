@@ -30,10 +30,7 @@ def get_touch_idx(close, events, sltp, molecule=None):
         pd.DataFrame: each colum corresponds to the time to touch each barrier
     """
     # Sample a subset with specific indices
-    if molecule is not None:
-        _events = events.loc[molecule]
-    else:
-        _events = events
+    _events = events.loc[molecule] if molecule is not None else events
     touch_idx = pd.DataFrame(index=_events.index)
     # Set Stop Loss and Take Profoit
     if sltp[0] > 0:
@@ -107,10 +104,7 @@ def get_events(close, timestamps, sltp=None, trgt=None, min_trgt=0,
     if t1 is None:
         t1 = pd.Series(pd.NaT, index=timestamps)
     # slpt has to be either of integer, list or tuple
-    if isinstance(sltp, list) or isinstance(sltp, tuple):
-        _sltp = sltp[:2]
-    else:
-        _sltp = [sltp, sltp]
+    _sltp = sltp[:2] if isinstance(sltp, (list, tuple)) else [sltp, sltp]
     # Define the side
     if side is None:
         # Default is LONG
@@ -152,8 +146,7 @@ def get_t1(close, timestamps, seconds=None):
     delta = pd.Timedelta(seconds=seconds)
     t1 = close.index.searchsorted(timestamps + delta)
     t1 = t1[t1 < close.shape[0]]
-    t1 = pd.Series(close.index[t1], index=timestamps[:t1.shape[0]])
-    return t1
+    return pd.Series(close.index[t1], index=timestamps[:t1.shape[0]])
 
 
 def get_labels(close, events, min_ret=0, sign_label=True, zero_label=0):
@@ -256,10 +249,7 @@ def get_barrier_labels(close, timestamps=None, trgt=None, sltp=[1, 1],
             - side, Only if you use metalabeling, this key is available
     """
     if timestamps is None:
-        if side is None:
-            timestamps = close.index
-        else:
-            timestamps = side.index
+        timestamps = close.index if side is None else side.index
     t1 = get_t1(close, timestamps, seconds=seconds)
     if num_threads is None:
         num_threads = mp.cpu_count()
@@ -269,5 +259,10 @@ def get_barrier_labels(close, timestamps=None, trgt=None, sltp=[1, 1],
                         min_trgt=min_trgt,
                         num_threads=num_threads,
                         t1=t1, side=side)
-    labels = get_labels(close, events, min_ret=min_ret, sign_label=sign_label, zero_label=zero_label)
-    return labels
+    return get_labels(
+        close,
+        events,
+        min_ret=min_ret,
+        sign_label=sign_label,
+        zero_label=zero_label,
+    )

@@ -26,10 +26,8 @@ def get_gaussian_betsize(probs, num_classes=2, eps=1e-4):
             signal = 2 * norm.cdf(signal) - 1
         elif probs < min_prob:
             signal = -1
-        elif probs > max_prob:
-            signal = 1
         else:
-            raise ValueError(f"Unkonwn probabilty: {probs}")
+            signal = 1
     else:
         signal = probs.copy()
         signal[probs >= max_prob] = 1
@@ -59,10 +57,8 @@ def get_tstats_betsize(probs, N, num_classes=2, eps=1e-4):
             signal = 2 * t.cdf(signal, df=N-1) - 1
         elif probs < min_prob:
             signal = -1
-        elif probs > max_prob:
-            signal = 1
         else:
-            raise ValueError(f"Unkonwn probabilty: {probs}")
+            signal = 1
     else:
         signal = probs.copy()
         signal[probs >= max_prob] = 1
@@ -118,13 +114,13 @@ def avg_active_signals(signals, num_threads=1, timestamps=None):
     """
     if timestamps is None:
         timestamps = set(signals['t1'].dropna().values)
-        timestamps = list(timestamps.union(set(signals.index.values)))
-        timestamps.sort()
-    out = mp_pandas_obj(
-        mp_avg_active_signals, ('molecule', timestamps),
+        timestamps = sorted(timestamps.union(set(signals.index.values)))
+    return mp_pandas_obj(
+        mp_avg_active_signals,
+        ('molecule', timestamps),
         num_threads,
-        signals=signals)
-    return out
+        signals=signals,
+    )
 
 
 def mp_avg_active_signals(signals, molecule):

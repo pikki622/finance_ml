@@ -5,7 +5,7 @@ def get_bsadf(series, tau, constant, lags):
     y, x = get_yx(series, constant=constant, lags=lags)
     if not isinstance(lags, int):
         lags = np.max(lags)
-    start_points = range(0, y.shape[0] - tau + 1)
+    start_points = range(y.shape[0] - tau + 1)
     basdf = None
     all_adf = []
     for start in start_points:
@@ -17,8 +17,7 @@ def get_bsadf(series, tau, constant, lags):
         all_adf.append(b_mean / b_std)
     all_adf = np.array(all_adf)
     bsadf = np.max(all_adf[np.isfinite(all_adf)])
-    out = {'Time': series.index[-1], 'bsadf': bsadf}
-    return out
+    return {'Time': series.index[-1], 'bsadf': bsadf}
 
 
 def get_yx(series, constant, lags):

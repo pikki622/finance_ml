@@ -14,14 +14,12 @@ def _get_ret(close, span=100, days=None, seconds=None):
     # Get rid of duplications in index
     prev_idx = prev_idx.drop_duplicates()
     ret = close[prev_idx.index] / close[prev_idx].values - 1
-    vol = ret.ewm(span=span).std()
-    return vol
+    return ret.ewm(span=span).std()
 
 
 def get_vol(close, span=100, days=None, seconds=None):
     ret = _get_ret(close, span, days, seconds)
-    vol = ret.ewm(span=span).std()
-    return vol
+    return ret.ewm(span=span).std()
 
 
 def get_mean(close, span=100, days=None, seconds=None):

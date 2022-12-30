@@ -68,13 +68,13 @@ def cv_score(clf,
             num_threads=num_threads)
     scores = []
     for train, test in cv_gen.split(X=X):
-        train_params = dict()
-        test_params = dict()
+        train_params = {}
+        test_params = {}
         # Sample weight is an optional parameter
         if sample_weight is not None:
             train_params['sample_weight'] = sample_weight.iloc[train].values
             test_params['sample_weight'] = sample_weight.iloc[test].values
-        test_params.update(kwargs)
+        test_params |= kwargs
         clf_fit = clf.fit(
             X=X.iloc[train, :].values, y=y.iloc[train].values, **train_params)
         if hasattr(clf_fit, 'classes_'):
@@ -87,7 +87,4 @@ def cv_score(clf,
         scores.append(score_)
     if scoring not in ['roc', 'precision_recall']:
         scores = np.array(scores)
-    if return_combs:
-        return scores, cv_gen.get_test_combs()
-    else:
-        return scores
+    return (scores, cv_gen.get_test_combs()) if return_combs else scores

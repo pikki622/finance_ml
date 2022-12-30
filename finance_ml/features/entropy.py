@@ -21,7 +21,7 @@ def plug_in(data, window):
         dict: Probability mass function
     """
     pmf = calc_pmf(data, window)
-    out = -sum([pmf[key] * np.log2(pmf[key]) for key in pmf.keys()])
+    out = -sum(pmf[key] * np.log2(pmf[key]) for key in pmf.keys())
     return out, pmf
 
 
@@ -46,8 +46,7 @@ def calc_pmf(data, window):
                 i - window,
             ]
     num_samples = float(len(data) - window)
-    pmf = {key: len(lib[key]) / num_samples for key in lib}
-    return pmf
+    return {key: len(lib[key]) / num_samples for key in lib}
 
 
 def lempel_zib_lib(data):

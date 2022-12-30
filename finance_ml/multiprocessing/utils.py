@@ -82,10 +82,7 @@ def report_progress(job_idx, num_jobs, time0, task):
     msg = [float(job_idx) / num_jobs, (time.time() - time0) / 60.]
     msg.append(msg[1] * (1 / msg[0] - 1))
     time_stamp = str(datetime.fromtimestamp(time.time()))
-    msg_ = time_stamp + ' ' + str(
-        round(msg[0] * 100, 2)) + '% ' + task + ' done after ' + \
-        str(round(msg[1], 2)) + ' minutes. Remaining ' + str(
-        round(msg[2], 2)) + ' minutes.'
+    msg_ = f'{time_stamp} {str(round(msg[0] * 100, 2))}% {task} done after {str(round(msg[1], 2))} minutes. Remaining {str(round(msg[2], 2))} minutes.'
     if job_idx < num_jobs:
         sys.stderr.write(msg_ + '\r')
     else:
